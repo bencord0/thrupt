@@ -1,0 +1,7 @@
+An example server/client parallel traffic generator
+
+  $ ./thrupt server --port 8000 &
+  $ ./thrpt client --connect localhost:8000
+
+Generates 100 requests per second, each lasting 100ms
+
