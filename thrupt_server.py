@@ -31,7 +31,8 @@ class Server(resource.Resource):
     def render_GET(self, request):
         d = defer.Deferred()
         delayedTask = reactor.callLater(1, self.returnContent, d, request, '')
-        request.notifyFinish().addErrback(self.cancelAnswer, request, delayedTask)
+        request.notifyFinish(
+            ).addErrback(self.cancelAnswer, request, delayedTask)
         return server.NOT_DONE_YET
 
 

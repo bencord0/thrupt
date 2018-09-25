@@ -30,13 +30,14 @@ def main():
         runClient(args.connect, args.rate)
 
     elif args.mode == "proxy":
-        runProxy(args.port, args.connect)
+        runProxy(args.port)
 
     else:
         return
 
     log.startLogging(sys.stdout)
     reactor.run()
+
 
 if __name__ == "__main__":
     main()

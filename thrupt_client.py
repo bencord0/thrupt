@@ -1,10 +1,14 @@
+import os
 import pdb
 import signal
 
+from furl import furl
+
 from twisted.internet import defer, reactor, task
+from twisted.internet.endpoints import HostnameEndpoint
 from twisted.internet.error import ConnectError
 from twisted.logger import Logger
-from twisted.web.client import Agent, ResponseFailed
+from twisted.web.client import Agent, ProxyAgent, ResponseFailed
 
 from metrics import metrics
 
@@ -14,13 +18,12 @@ class Client(object):
         self.connect = connect
         self.ua = ua
         self.log = Logger()
-    
+
     def request_GET(self):
         metrics.incr("thrupt.client.requests")
         d = self.ua.request(b'GET', self.connect.encode())
         d.addCallbacks(self.handle_response, self.handle_connect_error)
         d.addBoth(self.handle_errors)
-
 
     def handle_response(self, response):
         code_char = "-" if response.code < 300 else "="
@@ -55,16 +58,19 @@ class Client(object):
 
 
 def runClient(connect, rate):
-    ua = Agent(reactor)
+    http_proxy = os.getenv('HTTP_PROXY')
+    if http_proxy:
+        http_proxy = furl(http_proxy)
+        ep = HostnameEndpoint(reactor, http_proxy.host, http_proxy.port)
+        ua = ProxyAgent(ep)
+    else:
+        ua = Agent(reactor)
     client = Client(connect, ua)
     looper = task.LoopingCall(client.request_GET)
 
     # register signal handler to stop the looping call
     def signal_handler(signal, frame):
-        try:
-            looper.stop()
-        except:
-            pass
+        looper.stop()
         reactor.runUntilCurrent()
         reactor.stop()
     signal.signal(signal.SIGINT, signal_handler)

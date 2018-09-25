@@ -93,10 +93,9 @@ class Breaker(object):
 class Proxy(resource.Resource):
     isLeaf = True
 
-    def __init__(self, connect):
-        self.connect = connect
+    def __init__(self):
         self.b = Breaker()
-    
+
         pool = HTTPConnectionPool(reactor)
         self.ua = Agent(
             reactor,
@@ -111,12 +110,11 @@ class Proxy(resource.Resource):
             request.finish()
             return server.NOT_DONE_YET
 
-
-        uri = f"{self.connect}{request.uri.decode()}".encode()
-        d = self.ua.request(request.method, uri)
-        d.addCallbacks(self.handle_response, self.handle_connect_failure,
-                       callbackArgs=[request],
-                       errbackArgs=[request]
+        d = self.ua.request(request.method, request.uri)
+        d.addCallbacks(
+            self.handle_response, self.handle_connect_failure,
+            callbackArgs=[request],
+            errbackArgs=[request]
         )
         d.addErrback(self.handle_runtime_failure)
 
@@ -169,7 +167,8 @@ class Proxy(resource.Resource):
         pdb.set_trace()
         reactor.stop()
 
-def runProxy(port, connect):
-    s = server.Site(Proxy(connect), logPath='proxy.log')
+
+def runProxy(port):
+    s = server.Site(Proxy(), logPath='proxy.log')
     reactor.listenTCP(port, s, backlog=1)
     print(f"listening on {port}")

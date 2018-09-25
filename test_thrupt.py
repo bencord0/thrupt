@@ -37,7 +37,7 @@ class TestBreaker(unittest.TestCase):
         assert b.isOpen
         assert not b.isHalfOpen
         assert not b.isClosed
-        
+
         # When half open, only try once
         b.openCircuit()
         b.halfOpenCircuit()
@@ -60,7 +60,7 @@ class TestBreaker(unittest.TestCase):
 
         assert b.isHalfOpen
         assert b.shouldTry()
-        
+
         # Recovery is not immediate
         b.good()
         assert b.shouldTry()
@@ -86,4 +86,3 @@ class TestBreaker(unittest.TestCase):
         b.bad()
         assert not b.shouldTry()
         assert b.isOpen
-
