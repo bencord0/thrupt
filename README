@@ -11,6 +11,16 @@ Try again with different proxies
 
   $ python ./thrupt.py server --port 8001
 
+Start a proxy server, one of:
+
   $ nginx -c $PWD/nginx.conf
   $ envoy -c envoy.yaml
-  $ python ./thrupt.py proxy --connect localhost:8001 --port 8000
+
+or
+
+  $ python ./thrupt.py proxy --port 8000
+
+Set `HTTP_PROXY` and run the client again.
+
+  $ export HTTP_PROXY=http://localhost:8000
+  $ python ./thrupt.py client --connect localhost:8001 --rate 100
